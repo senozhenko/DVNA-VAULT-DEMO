@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+  labels:
+    name: mysql-deployment
+    app: dvna-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: mysql-pod
+      app: dvna-app
+  template:
+    metadata:
+      name: mysql-pod
+      labels:
+        name: mysql-pod
+        app: dvna-app
+    spec:
+      containers:
+      - image: mysql:5.7
+        name: mysql-container
+        env:
+          - name: MYSQL_USER
+            value: "dvna"
+          - name: MYSQL_PASSWORD
+            value: "passw0rd"
+          - name: MYSQL_DATABASE
+            value: "dvna"
+          - name: MYSQL_RANDOM_ROOT_PASSWORD
+            value: "yes"

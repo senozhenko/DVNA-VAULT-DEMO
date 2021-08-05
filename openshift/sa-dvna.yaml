@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dvna
+imagePullSecrets:
+- name: vault-demo
+- name: dvna-dockercfg-r54xw
+secrets:
+- name: vault-demo

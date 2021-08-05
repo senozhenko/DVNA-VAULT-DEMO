@@ -1,0 +1,44 @@
+stages:
+  - build
+  - scan
+  - push
+
+build:
+  stage: build
+  script:
+    - docker build --no-cache -t dev/dvna:2.0 .
+  tags:
+    - CIB
+
+.scan:
+  stage: scan
+  script:
+    - export VAULT_ADDR=$VAULT_ADDR
+    - export VAULT_TOKEN="$($AQUA_SECRET_AUTH)"
+    - export A_LOGIN="$($AQUA_SECRET_LOGIN)"
+    - export A_PASSWORD="$($AQUA_SECRET_PASSWORD)"
+    - scannercli scan --dockerless --local dev/dvna:2.0 --host $AQUA_HOST --user $A_LOGIN --password $A_PASSWORD --show-negligible --jsonfile /opt/aquascans/out.json -n > /dev/null  
+  after_script:
+    - cp /opt/aquascans/out.json .
+    - docker tag dev/dvna:2.0 $JET_REG_HOST/dso/security/vault-demo/dvna:2.0
+  artifacts:
+    paths: [out.json]
+    when: always
+  tags:
+    - CIB
+  allow_failure: true
+
+push:
+  stage: push
+  before_script:
+    - export VAULT_ADDR=$VAULT_ADDR
+    - export VAULT_TOKEN="$($VAULT_SECRET_AUTH)"
+    - export LOGIN="$($VAULT_SECRET_LOGIN)"
+    - export PASSWORD="$($VAULT_SECRET_PASSWORD)"
+    - docker login $JET_REG_HOST --username $LOGIN --password $PASSWORD
+  script:
+    - docker push $JET_REG_HOST/dso/security/vault-demo/dvna:2.0
+  after_script:
+    - docker rmi dev/dvna:2.0
+  tags:
+    - CIB

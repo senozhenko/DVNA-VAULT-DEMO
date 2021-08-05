@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dvna-deployment
+  labels:
+    name: dvna-deployment
+    app: dvna-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: dvna-pod
+      app: dvna-app
+  template:
+    metadata:
+      name: dvna-pod
+      labels:
+        name: dvna-pod
+        app: dvna-app
+      annotations:
+        vault.hashicorp.com/agent-inject: 'true'
+        vault.hashicorp.com/agent-inject-file-dvna: dvna
+        vault.hashicorp.com/agent-inject-secret-dvna: secret/data/dvna
+        vault.hashicorp.com/agent-inject-template-dvna: |
+          {{- with secret "secret/data/dvna"}}
+            export MYSQL_DATABASE="{{ .Data.data.MYSQL_DATABASE }}"
+            export MYSQL_HOST="{{ .Data.data.MYSQL_HOST }}"
+            export MYSQL_PASSWORD="{{ .Data.data.MYSQL_PASSWORD }}"
+            export MYSQL_PORT="{{ .Data.data.MYSQL_PORT }}"
+            export MYSQL_USER="{{ .Data.data.MYSQL_USER }}"
+          {{- end }}
+        vault.hashicorp.com/role: dvna
+        vault.hashicorp.com/secret-volume-path-dvna: /tmp
+    spec:
+      serviceAccountName: dvna
+      serviceAccount: dvna
+      containers:
+      - image: registry.jet.su/dso/security/vault-demo/dvna:1.0
+        name: dvna-container
+        command:
+            - /bin/bash
+            - '-c'
+            - . /tmp/dvna && /app/entrypoint.sh

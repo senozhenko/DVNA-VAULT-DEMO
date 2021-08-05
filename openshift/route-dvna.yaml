@@ -1,0 +1,23 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: dvna
+  labels:
+    app: dvna-app
+    app.kubernetes.io/instance: dvna-secret
+    name: app
+spec:
+  host: dvna-dvna-secret.apps.lab.ocp.lan
+  to:
+    kind: Service
+    name: dvna-service
+    weight: 100
+  port:
+    targetPort: 9090
+  wildcardPolicy: None
+status:
+  ingress:
+    - host: dvna-dvna-secret.apps.lab.ocp.lan
+      routerName: default
+      wildcardPolicy: None
+      routerCanonicalHostname: apps.lab.ocp.lan

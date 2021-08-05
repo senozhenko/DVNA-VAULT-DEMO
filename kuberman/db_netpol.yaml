@@ -1,0 +1,12 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mysqlblocker
+  namespace: dvnahashi
+spec:
+  podSelector:
+    matchLabels:
+      name: mysql-pod
+      app: dvna-app
+  policyTypes:
+  - Ingress

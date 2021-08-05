@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+  labels:
+    name: mysql-deployment
+    app: dvna-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: mysql-pod
+      app: dvna-app
+  template:
+    metadata:
+      name: mysql-pod
+      labels:
+        name: mysql-pod
+        app: dvna-app
+      annotations:
+        vault.hashicorp.com/agent-inject: 'true'
+        vault.hashicorp.com/agent-inject-file-dvna: dvna
+        vault.hashicorp.com/agent-inject-secret-dvna: secret/data/dvna
+        vault.hashicorp.com/agent-inject-template-dvna: |
+          {{- with secret "secret/data/dvna"}}
+            export MYSQL_DATABASE="{{ .Data.data.MYSQL_DATABASE }}"
+            export MYSQL_PASSWORD="{{ .Data.data.MYSQL_PASSWORD }}"
+            export MYSQL_USER="{{ .Data.data.MYSQL_USER }}"
+            export MYSQL_RANDOM_ROOT_PASSWORD="{{ .Data.data.MYSQL_RANDOM_ROOT_PASSWORD }}"
+          {{- end }}
+        vault.hashicorp.com/role: dvna
+        vault.hashicorp.com/secret-volume-path-dvna: /tmp
+    spec:
+      serviceAccountName: dvna
+      serviceAccount: dvna
+      containers:
+      - image: registry.jet.su/dso/security/vault-demo/mysql:5.7
+        name: mysql-container
+        command:
+        - /bin/bash
+        - '-c'
+        - source /tmp/dvna && /usr/local/bin/docker-entrypoint.sh mysqld

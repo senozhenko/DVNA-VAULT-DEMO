@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dvna-service
+  labels:
+    name: app
+    app: dvna-app
+spec:
+  type: NodePort
+  ports:
+    - port: 9090
+      targetPort: 9090
+      nodePort: 30003
+  selector:
+    name: dvna-pod
+    app: dvna-app
