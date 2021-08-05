@@ -1,6 +1,6 @@
 module.exports = {
   username: dvna,
-  password: passw0rd,
+  password: WEBINARtest!@#$,
   database: dvna,
   host: mysql-db,
   port: 3306,
